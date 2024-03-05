@@ -1,11 +1,46 @@
 #!/usr/bin/env python
 
+from collections.abc import Callable
 from time import sleep
 import threading
 from datetime import datetime, timedelta
 
 
+class UntilTime:
+    """
+
+    UntilTime is a helper class to create a datetime object from a string
+
+
+    usage:
+        UntilTime.next_tick("5m") # returns a datetime object 5 minutes from now
+    """
+
+    @staticmethod
+    def next_tick(until: str) -> datetime:
+        time_map = {
+            "s": "seconds",
+            "m": "minutes",
+            "h": "hours",
+            "d": "days",
+            "w": "weeks",
+        }
+
+        if until is None:
+            return datetime(year=9999, month=12, day=31, hour=23, minute=59, second=59)
+        time_unit = until[-1]
+        if time_unit not in time_map:
+            raise ValueError("Invalid time unit")
+        time_unit = time_map[time_unit]
+        time_value = int(until[:-1])
+        delta = timedelta(**{time_unit: time_value})
+        until_time = datetime.now() + delta
+        return until_time
+
+
 class CronTime:
+    """CronTime is a class to represent a crontime string  as a python object and provide methods to work with it"""
+
     def __init__(self, crontime_str: str):
         # TODO: Add seconds support?
         # TODO: Make Day of Week 0-7 (0 is Sunday) instead of 0-6 (0 is Monday) ??
@@ -35,6 +70,10 @@ class CronTime:
             "@hourly": "0 * * * *",
             "@minutely": "* * * * *",
         }
+        self._unsupported_aliases = [
+            "@boot",
+            "@wakeup",
+        ]
 
         self._crontime_str = crontime_str
         self.crontime = self._parse_crontime(crontime_str)
@@ -95,9 +134,10 @@ class CronTime:
         return dt
 
     def next_tick(self, now) -> datetime:
-        # TODO: increment by seconds?
         dt = self.assign_static(now)
         while not self.is_valid_tick(dt, now):
+            # TODO: This is not efficient
+            # we should identify the largest time unit that we can increment by
             dt += timedelta(minutes=1)
         return dt
 
@@ -130,15 +170,15 @@ class PyCron:
     """
     example usage:
         pc = PyCron()
-        lambda print_foo: print("foo")
-        pc.add("* * * * *", print_foo)
+        my_print = lambda x: print(x)
+        pc.add("* * * * *", print_foo, "foo")
         pc.start()
     """
 
     def __init__(self):
         self.cronjobs = []
 
-    def add(self, crontime, func, *args, **kwargs):
+    def add(self, crontime: str, func: Callable, *args, **kwargs):
         cronjob = CronJob(crontime, func, *args, **kwargs)
         self.cronjobs.append(cronjob)
 
@@ -173,6 +213,9 @@ if __name__ == "__main__":
     print(f"ct1: {ct1}  : {ct1.next_tick(tick5)}")
 
     print("tick5", tick5)
+
+    pyc = PyCron()
+    pyc.add("* * * * *", interactive_cron_test_func)
 
     # ct2 = CronTime("55 * * * *")
     # ct3 = CronTime("04 12 * * *")
