@@ -19,13 +19,14 @@ class CronTime:
             * - Day of Week (0-6) (0 is Sunday)
         """
         self._aliases = {
+            "@midnight": "0 0 * * *",
             "@yearly": "0 0 1 1 *",
             "@annually": "0 0 1 1 *",
             "@monthly": "0 0 1 * *",
             "@weekly": "0 0 * * 0",
             "@daily": "0 0 * * *",
-            "@midnight": "0 0 * * *",
             "@hourly": "0 * * * *",
+            "@minutely": "* * * * *",
         }
 
         self._crontime_str = crontime
