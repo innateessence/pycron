@@ -2,13 +2,13 @@
 
 from time import sleep
 import threading
-from threading import Thread
 from datetime import datetime, timedelta
 
 
 class CronTime:
-    def __init__(self, crontime: str):
-        # TODO: Add seconds support
+    def __init__(self, crontime_str: str):
+        # TODO: Add seconds support?
+        # TODO: Make Day of Week 0-7 (0 is Sunday) instead of 0-6 (0 is Monday) ??
         """
         Args:
             crontime:  crontime string in the format of * * * * * (minute hour day month weekday)
@@ -16,7 +16,14 @@ class CronTime:
             * - Hour (0-23)
             * - Day of Month (1-31)
             * - Month (1-12)
-            * - Day of Week (0-6) (0 is Sunday)
+            * - Day of Week (0-6) (0 is Monday)
+
+        We do not currently support the / operator, such as */5 * * * * to run every 5 minutes
+        We also do not currently support the - operator, such as 0-5 * * * * to run every minute from 0 to 5
+        We also do not currently support the , operator, such as 0,5 * * * * to run at 0 minutes and 5 minutes
+
+        Instead, you should just create multiple cron jobs.
+        This may be added in the future
         """
         self._aliases = {
             "@midnight": "0 0 * * *",
@@ -29,8 +36,8 @@ class CronTime:
             "@minutely": "* * * * *",
         }
 
-        self._crontime_str = crontime
-        self.crontime = self._parse_crontime(crontime)
+        self._crontime_str = crontime_str
+        self.crontime = self._parse_crontime(crontime_str)
         self.next_runtime = self.now()
 
     def _parse_crontime(self, crontime: str):
@@ -88,7 +95,7 @@ class CronTime:
         return dt
 
     def next_tick(self, now) -> datetime:
-        # TODO: increment by seconds
+        # TODO: increment by seconds?
         dt = self.assign_static(now)
         while not self.is_valid_tick(dt, now):
             dt += timedelta(minutes=1)
@@ -101,7 +108,7 @@ class CronTime:
         return f"<CronTime: {self.__str__()}"
 
 
-class CronJob(Thread):
+class CronJob(threading.Thread):
     def __init__(self, crontime: str, func, *args, **kwargs):
         super().__init__()
         self.crontime = CronTime(crontime)
@@ -165,7 +172,7 @@ if __name__ == "__main__":
     print(f"ct1: {ct1}  : {ct1.next_tick(tick4)}")
     print(f"ct1: {ct1}  : {ct1.next_tick(tick5)}")
 
-    print('tick5', tick5)
+    print("tick5", tick5)
 
     # ct2 = CronTime("55 * * * *")
     # ct3 = CronTime("04 12 * * *")
