@@ -6,14 +6,14 @@ import threading
 from datetime import datetime, timedelta
 
 
-class UntilTime:
+class ScheduleTime:
     """
 
-    UntilTime is a helper class to create a datetime object from a string
+    ScheduleTime is a helper class to create a datetime object from a string
 
 
     usage:
-        UntilTime.next_tick("5m") # returns a datetime object 5 minutes from now
+        ScheduleTime.next_tick("5m") # returns a datetime object 5 minutes from now
     """
 
     @staticmethod
