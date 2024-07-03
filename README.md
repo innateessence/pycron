@@ -7,7 +7,10 @@
 
 ## Why does this exist
 
-* I typically don't want to work on massive projects for free. But I love programming.
+* tldr; Because I felt like it
+* I would like to see an OSS cron-like tool with extra features (better debugging/management)
+* Maybe this project will eventually become that? Maybe not.
+* I typically don't want to work on large projects for free. But I love programming.
 * I may want this or something close to it within the next couple years
 * Maybe someone else thinks this is cool and copies whatever they like
 
