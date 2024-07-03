@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import enum
 from collections.abc import Callable
 from time import sleep
 import threading
@@ -79,7 +80,9 @@ class CronTime:
         self.crontime = self._parse_crontime(crontime_str)
         self.next_runtime = self.now()
 
-    def _parse_crontime(self, crontime: str):
+    def _parse_crontime(
+        self, crontime: str
+    ) -> tuple[int | str, int | str, int | str, int | str, int | str]:
         if crontime in self._aliases.keys():
             crontime = self._aliases[crontime]
         minute, hour, day, month, weekday = [
@@ -89,29 +92,53 @@ class CronTime:
 
     @staticmethod
     def now() -> datetime:
+        """
+        datetime.now() without seconds or microseconds for comparison convenience reasons
+        """
         retval = datetime.now()
-        # retval.replace(microsecond=0)
-        # retval.replace(second=0)
+        retval = retval.replace(microsecond=0)
+        retval = retval.replace(second=0)
         return retval
+
+    @classmethod
+    def epoch(cls) -> int:
+        """
+        CronTime.now() as a unix epoch timestamp (int)
+        """
+        return int(cls.now().timestamp())
 
     def is_valid_tick(self, tick: datetime, now: datetime) -> bool:
         minute, hour, day, month, weekday = self.crontime
 
-        if tick.minute != minute and minute != "*":
-            return False
-        if tick.hour != hour and hour != "*":
-            return False
-        if tick.day != day and day != "*":
-            return False
-        if tick.month != month and month != "*":
-            return False
-        if tick.weekday() != weekday and weekday != "*":
-            return False
+        # if tick.minute != minute and minute != "*":
+        #     return False
+        # if tick.hour != hour and hour != "*":
+        #     return False
+        # if tick.day != day and day != "*":
+        #     return False
+        # if tick.month != month and month != "*":
+        #     return False
+        # if tick.weekday() != weekday and weekday != "*":
+        #     return False
+        match tick:
+            case _ if tick.minute != minute and minute != "*":
+                return False
+            case _ if tick.hour != hour and hour != "*":
+                return False
+            case _ if tick.day != day and day != "*":
+                return False
+            case _ if tick.month != month and month != "*":
+                return False
+            case _ if tick.weekday() != weekday and weekday != "*":
+                return False
+
+        tick.replace(second=0)
+        tick.replace(microsecond=0)
         if tick <= now:
             return False
         return True
 
-    def assign_static(self, dt: datetime):
+    def assign_static(self, dt: datetime) -> datetime:
         minute, hour, day, month, weekday = self.crontime
         if weekday != "*":
             weekday = int(weekday)
@@ -141,38 +168,71 @@ class CronTime:
             dt += timedelta(minutes=1)
         return dt
 
-    def __str__(self):
+    def sleep_time_to_next_tick(self, next_tick: datetime) -> float:
+        """calculates the amount of seconds between the two datetimes"""
+        return next_tick.timestamp() - datetime.now().timestamp()
+
+    def __str__(self) -> str:
         return " ".join(str(i) for i in self.crontime)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<CronTime: {self.__str__()}"
+
+
+class CronJobStatus(enum.Enum):
+    SLEEPING = "sleeping"
+    RUNNING = "running"
+    FAILED = "failed"
 
 
 class CronJob(threading.Thread):
     def __init__(self, crontime: str, func, *args, **kwargs):
+        # NOTE: switch `crontime` to Any object which provides a `next_tick` method to generate the next datetime object
         super().__init__()
         self.crontime = CronTime(crontime)
         self.func = func
         self.args = args
         self.kwargs = kwargs
         self.daemon = True
+        self._status = CronJobStatus.SLEEPING
+        self._last_run_time = None
 
-    def run(self):
+    def run(self) -> None:
         while True:
             now = self.crontime.now()
             next_runtime = self.crontime.next_tick(now)
-            sleep_time = (next_runtime - datetime.now()).seconds
-            print(f"Sleeping for {sleep_time} seconds")
+            sleep_time = self.crontime.sleep_time_to_next_tick(next_runtime)
+
+            print("now:", now)
+            print("next_runtime:", next_runtime)
+            print(f"Sleeping for {round(sleep_time, 2)} seconds")
+
+            self._status = CronJobStatus.SLEEPING
             sleep(sleep_time)
+            self._status = CronJobStatus.RUNNING
+            try:
+                self.func(*self.args, **self.kwargs)
+                self._last_run_time = self.crontime.now()
+            except Exception as e:
+                self._status = CronJobStatus.FAILED
+                raise e
+
+    def __repr__(self):
+        return f"<CronJob: {self.func.__name__}({', '.join(str(arg) for arg in self.args)})>"
 
 
 class PyCron:
     """
     example usage:
         pc = PyCron()
-        my_print = lambda x: print(x)
-        pc.add("* * * * *", print_foo, "foo")
+
+        def my_print(x):
+            print(x)
+
+        pc.add("* * * * *", my_print, "foo")
         pc.start()
+        # wait until your systems clock reaches 00 seconds
+        > foo
     """
 
     def __init__(self):
@@ -191,9 +251,11 @@ class PyCron:
             cronjob.stop()
 
 
-def interactive_cron_test_func():
+def interactive_cron_test_func(foo, bar="bar"):
     now = datetime.now()
     print(f"Interactive cron test func ran at {now}")
+    print("foo:", foo)
+    print("bar:", bar)
 
 
 if __name__ == "__main__":
@@ -214,9 +276,6 @@ if __name__ == "__main__":
 
     print("tick5", tick5)
 
-    pyc = PyCron()
-    pyc.add("* * * * *", interactive_cron_test_func)
-
     # ct2 = CronTime("55 * * * *")
     # ct3 = CronTime("04 12 * * *")
     # ct4 = CronTime("02 02 02 * *")
@@ -231,9 +290,9 @@ if __name__ == "__main__":
     # print(f"{ct5}   : {ct5.next_tick(now)}")
 
     # print("Testing interactive cron job")
-    # pc = PyCron()
-    # pc.add("* * * * *", interactive_cron_test_func)
-    # pc.start()
+    pc = PyCron()
+    pc.add("* * * * *", interactive_cron_test_func, "foo", bar="baz")
+    pc.start()
 
-    # while threading.active_count() > 0:
-    #     sleep(1)
+    while threading.active_count() > 0:
+        sleep(1)
