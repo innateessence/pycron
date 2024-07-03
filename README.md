@@ -41,4 +41,5 @@ pycron.start()
 
 ## Testing
 
-* `python test.py`
+* Running the test cases: `python test.py`
+* Interactive testing / debugging: `python pycron.py`
