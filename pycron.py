@@ -110,27 +110,16 @@ class CronTime:
     def is_valid_tick(self, tick: datetime, now: datetime) -> bool:
         minute, hour, day, month, weekday = self.crontime
 
-        # if tick.minute != minute and minute != "*":
-        #     return False
-        # if tick.hour != hour and hour != "*":
-        #     return False
-        # if tick.day != day and day != "*":
-        #     return False
-        # if tick.month != month and month != "*":
-        #     return False
-        # if tick.weekday() != weekday and weekday != "*":
-        #     return False
-        match tick:
-            case _ if tick.minute != minute and minute != "*":
-                return False
-            case _ if tick.hour != hour and hour != "*":
-                return False
-            case _ if tick.day != day and day != "*":
-                return False
-            case _ if tick.month != month and month != "*":
-                return False
-            case _ if tick.weekday() != weekday and weekday != "*":
-                return False
+        if tick.minute != minute and minute != "*":
+            return False
+        if tick.hour != hour and hour != "*":
+            return False
+        if tick.day != day and day != "*":
+            return False
+        if tick.month != month and month != "*":
+            return False
+        if tick.weekday() != weekday and weekday != "*":
+            return False
 
         tick.replace(second=0)
         tick.replace(microsecond=0)
