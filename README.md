@@ -1,7 +1,15 @@
 # pycron
 
-* Just a fun project for supporting cron syntax for python threads
+## What is this
+
+* Just a fun project for supporting cron-ish syntax for python threads
 * In other words, this is a (cron-ish) task scheduler avaliable in pure python
+
+## Why does this exist
+
+* I typically don't want to work on massive projects for free. But I love programming.
+* I may want this or something close to it within the next couple years
+* Maybe someone else thinks this is cool and copies whatever they like
 
 ## Quickstart
 
