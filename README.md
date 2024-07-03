@@ -46,3 +46,7 @@ pycron.start()
 
 * Running the test cases: `python test.py`
 * Interactive testing / debugging: `python pycron.py`
+
+## Improvements
+
+* Adding a system unit such as a `systemd` service would probably be a good idea
