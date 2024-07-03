@@ -3,6 +3,8 @@
 * Just a fun project for supporting cron syntax for python threads
 * In other words, this is a (cron-ish) task scheduler avaliable in pure python
 
+## Quickstart
+
 example usage:
 
 ```python
@@ -28,3 +30,7 @@ pycron.start()
 # the system clock hits 00 seconds
 # just like how you'd expect a cronjob to behave
 ```
+
+## Testing
+
+* `python test.py`
