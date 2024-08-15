@@ -7,12 +7,13 @@
 
 ## Why does this exist
 
-* tldr; Because I felt like it
-* I would like to see an OSS cron-like tool with extra features (better debugging/management)
-* Maybe this project will eventually become that? Maybe not.
-* I typically don't want to work on large projects for free. But I love programming.
-* I may want this or something close to it within the next couple years
-* Maybe someone else thinks this is cool and copies whatever they like
+* Because I wanted cron-like behavior for pure Python without pulling in celery
+* Because sometimes I find I want something highly niche and custom, that is not supported by the major packages such as celery
+* It's a good foundation for a project I may or may not take on in the future
+
+## What this is not
+* A replacement for celery.
+* Production-grade software
 
 ## Quickstart
 
