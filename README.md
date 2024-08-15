@@ -7,7 +7,7 @@
 
 ## Why does this exist
 
-* Because I wanted cron-like behavior for pure Python without pulling in celery
+* Because I wanted cron-like behavior for pure Python threads without pulling in celery
 * Because sometimes I find I want something highly niche and custom, that is not supported by the major packages such as celery
 * It's a good foundation for a project I may or may not take on in the future
 
