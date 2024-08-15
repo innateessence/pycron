@@ -2,14 +2,15 @@
 
 ## What is this
 
-* Just a fun project for supporting cron-ish syntax for python threads
-* In other words, this is a (cron-ish) task scheduler avaliable in pure python
+* Just a fun project for supporting cron-ish syntax for Python threads
+* In other words, this is a (cron-ish) task scheduler available in pure Python
 
 ## Why does this exist
 
 * Because I wanted cron-like behavior for pure Python threads without pulling in celery
 * Because sometimes I find I want something highly niche and custom, that is not supported by the major packages such as celery
 * It's a good foundation for a project I may or may not take on in the future
+* "What I cannot create, I do not understand" — Richard Feynman.
 
 ## What this is not
 * A replacement for celery.
